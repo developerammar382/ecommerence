@@ -72,7 +72,7 @@
               Back to Store
             </router-link>
           </div>
-        </div>
+        </nav>
       </aside>
 
       <main class="flex-1 p-8">
