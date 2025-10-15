@@ -20,6 +20,14 @@ export const useWishlistStore = defineStore('wishlist', () => {
     return items.value.some(item => item.id === productId)
   }
 
+  function toggleWishlist(product) {
+    if (isInWishlist(product.id)) {
+      removeFromWishlist(product.id)
+    } else {
+      addToWishlist(product)
+    }
+  }
+
   function saveWishlist() {
     localStorage.setItem('wishlist', JSON.stringify(items.value))
   }
@@ -37,6 +45,7 @@ export const useWishlistStore = defineStore('wishlist', () => {
     items,
     addToWishlist,
     removeFromWishlist,
-    isInWishlist
+    isInWishlist,
+    toggleWishlist
   }
 })

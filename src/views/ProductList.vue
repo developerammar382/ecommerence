@@ -1,150 +1,297 @@
 <template>
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="flex justify-between items-center mb-8">
-      <h1 class="text-3xl font-bold">Products</h1>
-      <div class="flex items-center space-x-4">
-        <select v-model="sortBy" class="input-field w-48">
-          <option value="">Sort by</option>
-          <option value="price-low">Price: Low to High</option>
-          <option value="price-high">Price: High to Low</option>
-          <option value="rating">Rating</option>
-        </select>
-      </div>
+  <div class="page-container">
+    <div class="mb-8">
+      <h1 class="section-title">{{ pageTitle }}</h1>
+      <p class="text-gray-600 text-lg">{{ filteredProducts.length }} products found</p>
     </div>
 
-    <div class="flex gap-8">
-      <aside class="w-64 flex-shrink-0">
-        <div class="card">
-          <h3 class="font-semibold mb-4">Categories</h3>
-          <div class="space-y-2">
-            <label v-for="category in categories" :key="category.id" class="flex items-center">
+    <div class="flex flex-col lg:flex-row gap-8">
+      <aside class="lg:w-64 flex-shrink-0">
+        <div class="card sticky top-24">
+          <h3 class="text-lg font-semibold mb-4">Filters</h3>
+          
+          <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Categories</label>
+            <div class="space-y-2">
+              <label v-for="category in categories" :key="category.id" class="flex items-center cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  :value="category.id" 
+                  v-model="selectedCategories"
+                  class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                />
+                <span class="ml-2 text-sm text-gray-700">{{ category.icon }} {{ category.name }}</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Price Range: ${{ priceRange[0] }} - ${{ priceRange[1] }}
+            </label>
+            <div class="space-y-2">
               <input 
-                type="radio" 
-                :value="category.id" 
-                v-model="selectedCategory"
-                class="mr-2"
+                type="range" 
+                min="0" 
+                max="1000" 
+                v-model.number="priceRange[0]"
+                class="w-full"
               />
-              {{ category.icon }} {{ category.name }}
+              <input 
+                type="range" 
+                min="0" 
+                max="1000" 
+                v-model.number="priceRange[1]"
+                class="w-full"
+              />
+            </div>
+          </div>
+
+          <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Rating</label>
+            <div class="space-y-2">
+              <label v-for="rating in [5, 4, 3, 2, 1]" :key="rating" class="flex items-center cursor-pointer">
+                <input 
+                  type="radio" 
+                  :value="rating" 
+                  v-model.number="selectedRating"
+                  name="rating"
+                  class="border-gray-300 text-primary-600 focus:ring-primary-500"
+                />
+                <div class="ml-2 flex items-center">
+                  <svg v-for="i in 5" :key="i" class="w-4 h-4" 
+                    :class="i <= rating ? 'text-yellow-400' : 'text-gray-300'"
+                    fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                  </svg>
+                  <span class="ml-1 text-sm text-gray-600">& Up</span>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <div class="mb-6">
+            <label class="flex items-center cursor-pointer">
+              <input 
+                type="checkbox" 
+                v-model="inStockOnly"
+                class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+              />
+              <span class="ml-2 text-sm text-gray-700">In Stock Only</span>
             </label>
           </div>
 
-          <h3 class="font-semibold mt-6 mb-4">Price Range</h3>
-          <div class="space-y-2">
-            <label class="flex items-center">
-              <input type="radio" value="all" v-model="priceRange" class="mr-2" />
-              All Prices
-            </label>
-            <label class="flex items-center">
-              <input type="radio" value="0-50" v-model="priceRange" class="mr-2" />
-              Under $50
-            </label>
-            <label class="flex items-center">
-              <input type="radio" value="50-100" v-model="priceRange" class="mr-2" />
-              $50 - $100
-            </label>
-            <label class="flex items-center">
-              <input type="radio" value="100-200" v-model="priceRange" class="mr-2" />
-              $100 - $200
-            </label>
-            <label class="flex items-center">
-              <input type="radio" value="200+" v-model="priceRange" class="mr-2" />
-              Over $200
-            </label>
-          </div>
+          <button @click="clearFilters" class="w-full btn-outline text-sm">
+            Clear All Filters
+          </button>
         </div>
       </aside>
 
       <div class="flex-1">
-        <div v-if="filteredProducts.length === 0" class="text-center py-16">
-          <p class="text-gray-600 text-lg">No products found</p>
-        </div>
-        <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div v-for="product in filteredProducts" :key="product.id" class="card hover:shadow-lg transition-shadow">
-            <img :src="product.image" :alt="product.name" class="w-full h-48 object-cover rounded-lg mb-4" />
-            <h3 class="font-semibold mb-2">{{ product.name }}</h3>
-            <p class="text-gray-600 text-sm mb-2 line-clamp-2">{{ product.description }}</p>
-            <div class="flex items-center mb-2">
-              <span class="text-yellow-400">★</span>
-              <span class="ml-1 text-sm">{{ product.rating }} ({{ product.reviews }} reviews)</span>
-            </div>
-            <div class="flex items-center justify-between">
-              <span class="text-2xl font-bold text-primary-600">${{ product.price }}</span>
-              <div class="flex space-x-2">
-                <button @click="addToWishlist(product)" class="p-2 hover:bg-gray-100 rounded-lg">
-                  <svg class="w-5 h-5 text-red-500" :fill="wishlistStore.isInWishlist(product.id) ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                  </svg>
-                </button>
-                <router-link :to="`/products/${product.id}`" class="btn-primary text-sm">View</router-link>
-              </div>
-            </div>
+        <div class="flex items-center justify-between mb-6 flex-wrap gap-4">
+          <div class="flex items-center gap-4">
+            <select v-model="sortBy" class="input-field w-auto">
+              <option value="featured">Featured</option>
+              <option value="price-asc">Price: Low to High</option>
+              <option value="price-desc">Price: High to Low</option>
+              <option value="rating">Highest Rated</option>
+              <option value="newest">Newest</option>
+            </select>
+
+            <select v-model="perPage" class="input-field w-auto">
+              <option :value="12">12 per page</option>
+              <option :value="24">24 per page</option>
+              <option :value="48">48 per page</option>
+            </select>
           </div>
+
+          <div class="flex gap-2">
+            <button 
+              @click="viewMode = 'grid'"
+              class="p-2 rounded-lg transition-colors"
+              :class="viewMode === 'grid' ? 'bg-primary-100 text-primary-600' : 'bg-gray-100 text-gray-600'"
+            >
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+              </svg>
+            </button>
+            <button 
+              @click="viewMode = 'list'"
+              class="p-2 rounded-lg transition-colors"
+              :class="viewMode === 'list' ? 'bg-primary-100 text-primary-600' : 'bg-gray-100 text-gray-600'"
+            >
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <LoadingSpinner v-if="loading" text="Loading products..." />
+        
+        <EmptyState 
+          v-else-if="paginatedProducts.length === 0"
+          title="No products found"
+          description="Try adjusting your filters or search criteria to find what you're looking for."
+          actionText="Clear Filters"
+          @action="clearFilters"
+        />
+
+        <div v-else>
+          <div 
+            class="grid gap-6 mb-8"
+            :class="viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'"
+          >
+            <ProductCard 
+              v-for="product in paginatedProducts" 
+              :key="product.id" 
+              :product="product"
+              @try-on="openTryOnModal"
+            />
+          </div>
+
+          <Pagination 
+            v-if="totalPages > 1"
+            :current-page="currentPage"
+            :total-pages="totalPages"
+            :total-items="sortedProducts.length"
+            :per-page="perPage"
+            @update:current-page="currentPage = $event"
+          />
         </div>
       </div>
     </div>
+
+    <Modal 
+      v-model="showTryOnModal" 
+      title="Virtual Try-On" 
+      size="xl"
+      :close-on-backdrop="false"
+    >
+      <VirtualTryOn 
+        v-if="selectedProductForTryOn" 
+        :product="selectedProductForTryOn"
+        @close="showTryOnModal = false"
+      />
+    </Modal>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useProductStore } from '@/stores/products'
-import { useWishlistStore } from '@/stores/wishlist'
+import ProductCard from '@/components/ui/ProductCard.vue'
+import LoadingSpinner from '@/components/ui/LoadingSpinner.vue'
+import EmptyState from '@/components/ui/EmptyState.vue'
+import Pagination from '@/components/ui/Pagination.vue'
+import Modal from '@/components/ui/Modal.vue'
+import VirtualTryOn from '@/components/VirtualTryOn.vue'
 
 const route = useRoute()
 const productStore = useProductStore()
-const wishlistStore = useWishlistStore()
 
-const categories = [{ id: null, name: 'All Categories', icon: '🛍️' }, ...productStore.categories]
-const selectedCategory = ref(null)
-const priceRange = ref('all')
-const sortBy = ref('')
+const loading = ref(true)
+const viewMode = ref('grid')
+const sortBy = ref('featured')
+const perPage = ref(12)
+const currentPage = ref(1)
+const selectedCategories = ref([])
+const priceRange = ref([0, 1000])
+const selectedRating = ref(0)
+const inStockOnly = ref(false)
+const showTryOnModal = ref(false)
+const selectedProductForTryOn = ref(null)
+
+const categories = productStore.categories
+
+const pageTitle = computed(() => {
+  const categoryId = parseInt(route.query.category)
+  if (categoryId) {
+    const category = categories.find(c => c.id === categoryId)
+    return category ? category.name : 'Products'
+  }
+  return route.query.search ? `Search Results for "${route.query.search}"` : 'All Products'
+})
 
 const filteredProducts = computed(() => {
-  let products = [...productStore.products]
+  let products = productStore.products
 
   if (route.query.search) {
     products = productStore.searchProducts(route.query.search)
   }
 
-  if (selectedCategory.value) {
-    products = products.filter(p => p.categoryId === selectedCategory.value)
+  if (route.query.category) {
+    const categoryId = parseInt(route.query.category)
+    products = products.filter(p => p.categoryId === categoryId)
   }
 
-  if (priceRange.value !== 'all') {
-    if (priceRange.value === '0-50') {
-      products = products.filter(p => p.price < 50)
-    } else if (priceRange.value === '50-100') {
-      products = products.filter(p => p.price >= 50 && p.price < 100)
-    } else if (priceRange.value === '100-200') {
-      products = products.filter(p => p.price >= 100 && p.price < 200)
-    } else if (priceRange.value === '200+') {
-      products = products.filter(p => p.price >= 200)
-    }
+  if (selectedCategories.value.length > 0) {
+    products = products.filter(p => selectedCategories.value.includes(p.categoryId))
   }
 
-  if (sortBy.value === 'price-low') {
-    products.sort((a, b) => a.price - b.price)
-  } else if (sortBy.value === 'price-high') {
-    products.sort((a, b) => b.price - a.price)
-  } else if (sortBy.value === 'rating') {
-    products.sort((a, b) => b.rating - a.rating)
+  products = products.filter(p => p.price >= priceRange.value[0] && p.price <= priceRange.value[1])
+
+  if (selectedRating.value > 0) {
+    products = products.filter(p => p.rating >= selectedRating.value)
+  }
+
+  if (inStockOnly.value) {
+    products = products.filter(p => p.stock > 0)
   }
 
   return products
 })
 
-function addToWishlist(product) {
-  if (wishlistStore.isInWishlist(product.id)) {
-    wishlistStore.removeFromWishlist(product.id)
-  } else {
-    wishlistStore.addToWishlist(product)
+const sortedProducts = computed(() => {
+  const products = [...filteredProducts.value]
+  
+  switch (sortBy.value) {
+    case 'price-asc':
+      return products.sort((a, b) => a.price - b.price)
+    case 'price-desc':
+      return products.sort((a, b) => b.price - a.price)
+    case 'rating':
+      return products.sort((a, b) => b.rating - a.rating)
+    case 'newest':
+      return products.sort((a, b) => b.id - a.id)
+    default:
+      return products.sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0))
   }
+})
+
+const totalPages = computed(() => Math.ceil(sortedProducts.value.length / perPage.value))
+
+const paginatedProducts = computed(() => {
+  const start = (currentPage.value - 1) * perPage.value
+  const end = start + perPage.value
+  return sortedProducts.value.slice(start, end)
+})
+
+function clearFilters() {
+  selectedCategories.value = []
+  priceRange.value = [0, 1000]
+  selectedRating.value = 0
+  inStockOnly.value = false
+  sortBy.value = 'featured'
 }
 
+function openTryOnModal(product) {
+  selectedProductForTryOn.value = product
+  showTryOnModal.value = true
+}
+
+watch([selectedCategories, priceRange, selectedRating, inStockOnly, sortBy], () => {
+  currentPage.value = 1
+})
+
+watch(perPage, () => {
+  currentPage.value = 1
+})
+
 onMounted(() => {
-  if (route.query.category) {
-    selectedCategory.value = parseInt(route.query.category)
-  }
+  setTimeout(() => {
+    loading.value = false
+  }, 500)
 })
 </script>
