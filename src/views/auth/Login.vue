@@ -12,6 +12,7 @@
               v-model="email" 
               required
               placeholder="admin@example.com"
+              autocomplete="email"
               class="input-field" 
             />
           </div>
@@ -23,6 +24,7 @@
               v-model="password" 
               required
               placeholder="password"
+              autocomplete="current-password"
               class="input-field" 
             />
           </div>
