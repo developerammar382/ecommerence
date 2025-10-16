@@ -1,0 +1,81 @@
+I’m developing a multi-category e-commerce platform with an integrated CMS (Content Management System) for easy content updates and a fully functional role-based admin dashboard.
+
+Tech Stack:
+
+Backend: Python
+
+Frontend: Vue.js
+
+The platform will support a wide range of product categories, including but not limited to:
+
+Clothing, shoes, and accessories
+
+Groceries and daily-use items
+
+Electronics and gadgets
+
+Home and kitchen products
+
+Health and beauty products
+
+One of the key features will be a 3D virtual try-on experience for wearable products (e.g., clothes, shoes, glasses). Users will be able to upload their photo or use their camera to try products virtually.
+
+🧑‍💼 Admin Panel Features
+
+The admin panel will be role-based, supporting multiple user types:
+
+Super Admin
+
+Product Manager
+
+Content Editor
+
+Customer Support
+
+Additionally, it will include AI-powered tools for:
+
+Inventory management and demand forecasting
+
+Automated product recommendations
+
+Smart content suggestions (e.g., product descriptions, SEO tags)
+
+Customer behavior analytics and insights
+
+🧠 User-Side Features
+
+AI-powered chat assistant for support, product recommendations, and order tracking
+
+Personalized shopping experiences based on browsing and purchase history
+
+Secure payment gateways and multiple shipping options
+
+Mobile responsive and SEO-optimized design
+
+Scalable architecture with future mobile app integration (Android & iOS)
+
+🚀 Current Progress
+
+I’ve already completed Version 1 of the website and admin panel with the basic structure in place. The backend and CMS are functional, and the foundation of the frontend is set up.
+
+🎨 Frontend Development Task
+
+Your task will focus on enhancing the frontend to make the website more professional and visually appealing. Specifically:
+
+✨ Redesign and polish the UI with a clean, modern, and consistent design system.
+
+🖼️ Implement a sliding image hero banner on the homepage for better product presentation.
+
+🧭 Use high-quality images and icons instead of emojis to give the platform a premium look.
+
+📱 Ensure the design is fully responsive across all devices.
+
+🧰 Build the remaining pages for both the website and the admin panel.
+
+🎨 Choose and implement a professional color scheme that looks elegant and enhances readability.
+
+🖼️ Improve overall user experience (UX) — smooth transitions, clean typography, proper spacing, and visual hierarchy.
+
+🌟 Goal
+
+The final design should feel like a modern, scalable e-commerce platform — fast, clean, user-friendly, and visually impressive. It should be on par with major e-commerce brands in terms of presentation and professionalism.
