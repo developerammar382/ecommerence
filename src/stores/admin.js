@@ -9,7 +9,18 @@ export const useAdminStore = defineStore('admin', () => {
     total_orders: 0,
     total_revenue: 0,
     pending_orders: 0,
-    low_stock_products: 0
+    low_stock_products: 0,
+    totalOrders: 0,
+    totalProducts: 0,
+    totalCustomers: 0,
+    revenue: 0,
+    pendingOrders: 0,
+    lowStockItems: 0
+  })
+  
+  const salesData = ref({
+    growthRate: 0,
+    monthlyRevenue: []
   })
   
   const recentOrders = ref([])
@@ -17,17 +28,46 @@ export const useAdminStore = defineStore('admin', () => {
   const salesByMonth = ref([])
   const users = ref([])
   const loading = ref(false)
+  const inventoryAlerts = ref([])
 
   async function fetchDashboardStats() {
     try {
       loading.value = true
       const response = await api.get('/admin/dashboard/stats')
-      dashboardStats.value = response.data.stats
-      recentOrders.value = response.data.recentOrders
-      topProducts.value = response.data.topProducts
-      salesByMonth.value = response.data.salesByMonth
+      const stats = response.data.stats
+      
+      // Map API response to dashboard stats with both naming conventions
+      dashboardStats.value = {
+        ...stats,
+        totalOrders: parseInt(stats.total_orders || 0),
+        totalProducts: parseInt(stats.total_products || 0),
+        totalCustomers: parseInt(stats.total_customers || 0),
+        revenue: parseFloat(stats.total_revenue || 0),
+        pendingOrders: parseInt(stats.pending_orders || 0),
+        lowStockItems: parseInt(stats.low_stock_products || 0)
+      }
+      
+      // Set salesData with growth rate
+      salesData.value = {
+        growthRate: 12, // Default value, can be calculated from analytics
+        monthlyRevenue: response.data.salesByMonth || []
+      }
+      
+      recentOrders.value = response.data.recentOrders || []
+      topProducts.value = response.data.topProducts || []
+      salesByMonth.value = response.data.salesByMonth || []
     } catch (error) {
       console.error('Error fetching dashboard stats:', error)
+      // Set default values on error
+      dashboardStats.value = {
+        totalOrders: 0,
+        totalProducts: 0,
+        totalCustomers: 0,
+        revenue: 0,
+        pendingOrders: 0,
+        lowStockItems: 0
+      }
+      salesData.value = { growthRate: 0, monthlyRevenue: [] }
     } finally {
       loading.value = false
     }
@@ -116,11 +156,13 @@ export const useAdminStore = defineStore('admin', () => {
 
   return {
     dashboardStats,
+    salesData,
     recentOrders,
     topProducts,
     salesByMonth,
     users,
     loading,
+    inventoryAlerts,
     fetchDashboardStats,
     fetchUsers,
     updateUserStatus,
