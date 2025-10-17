@@ -12,6 +12,9 @@ import orderRoutes from './routes/orderRoutes.js';
 import cartRoutes from './routes/cartRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
+import wishlistRoutes from './routes/wishlistRoutes.js';
+import reviewRoutes from './routes/reviewRoutes.js';
+import { paymentController } from './controllers/paymentController.js';
 
 dotenv.config();
 
@@ -23,6 +26,8 @@ app.use(cors({
   origin: process.env.FRONTEND_URL || '*',
   credentials: true
 }));
+
+app.post('/api/payment/webhook', express.raw({ type: 'application/json' }), paymentController.handleWebhook);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -45,6 +50,8 @@ app.use('/api', orderRoutes);
 app.use('/api', cartRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/payment', paymentRoutes);
+app.use('/api', wishlistRoutes);
+app.use('/api', reviewRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
@@ -53,6 +60,9 @@ async function startServer() {
   try {
     await checkDatabaseConnection();
     await initializeDatabase();
+    
+    const { seedDatabase } = await import('./utils/seedData.js');
+    await seedDatabase();
 
     app.listen(PORT, '0.0.0.0', () => {
       console.log(`✅ Server running on port ${PORT}`);

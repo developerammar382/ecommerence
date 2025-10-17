@@ -175,14 +175,40 @@ The platform supports 7 main categories with 21 featured products:
 - Content management system
 - Analytics and reporting
 
-## Future Integration Points
+## Backend Implementation (October 2025)
 
-- Axios is included but not yet connected to a backend API
-- The application is structured to easily integrate with a REST API or GraphQL backend
-- LocalStorage persistence can be replaced with server-side data storage
-- Mock authentication can be replaced with JWT or OAuth2 implementation
-- Admin dashboard pages need completion with professional charts and data visualization
-- Mobile app integration (Android & iOS) planned for future phases
+### API Architecture
+- **Express.js REST API** running on port 3000
+- **PostgreSQL Database** with complete schema for e-commerce operations
+- **JWT Authentication** with role-based access control
+- **Stripe Payment Integration** for secure payment processing
+- **Security Features**: CORS, rate limiting, Helmet, input validation
+
+### Database Schema
+- **Users**: Authentication, profiles, roles (admin, product_manager, customer)
+- **Products**: Full product catalog with categories, images, stock tracking
+- **Categories**: Organized product categorization
+- **Orders**: Complete order management with items and shipping details
+- **Cart**: User shopping cart persistence
+- **Wishlist**: User wishlists
+- **Reviews**: Product reviews and ratings
+- **Inventory Alerts**: Low stock monitoring
+
+### API Endpoints
+- Authentication: Register, login, profile management, password reset
+- Products: CRUD operations, filtering, search, featured products
+- Categories: Category management
+- Cart: Add/remove items, update quantities, sync between sessions
+- Orders: Create orders, track status, view history, admin management
+- Payment: Stripe integration for payment intents and refunds
+- Admin: Dashboard stats, user management, sales analytics, reporting
+
+### Frontend-Backend Integration
+- Axios API client with automatic JWT token injection
+- Pinia stores connected to REST API endpoints
+- Real-time cart synchronization on login
+- Error handling and user feedback
+- Automatic token refresh and session management
 
 ## Next Steps
 

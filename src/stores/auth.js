@@ -1,46 +1,91 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import api from '../config/api'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref(null)
-  const isAuthenticated = computed(() => !!user.value)
-  const isAdmin = computed(() => user.value?.role === 'Super Admin' || user.value?.role === 'Product Manager')
+  const token = ref(null)
+  const isAuthenticated = computed(() => !!user.value && !!token.value)
+  const isAdmin = computed(() => user.value?.role === 'admin' || user.value?.role === 'product_manager')
 
-  function login(email, password) {
-    const mockUsers = {
-      'admin@example.com': { id: 1, name: 'Admin User', email: 'admin@example.com', role: 'Super Admin' },
-      'manager@example.com': { id: 2, name: 'Product Manager', email: 'manager@example.com', role: 'Product Manager' },
-      'editor@example.com': { id: 3, name: 'Content Editor', email: 'editor@example.com', role: 'Content Editor' },
-      'user@example.com': { id: 4, name: 'John Doe', email: 'user@example.com', role: 'Customer' }
-    }
-
-    if (mockUsers[email]) {
-      user.value = mockUsers[email]
+  async function login(email, password) {
+    try {
+      const response = await api.post('/auth/login', { email, password })
+      user.value = response.data.user
+      token.value = response.data.token
+      
       localStorage.setItem('user', JSON.stringify(user.value))
-      return true
+      localStorage.setItem('authToken', token.value)
+      
+      return { success: true }
+    } catch (error) {
+      console.error('Login error:', error)
+      return { 
+        success: false, 
+        error: error.response?.data?.error || 'Login failed' 
+      }
     }
-    return false
   }
 
-  function register(userData) {
-    user.value = {
-      id: Date.now(),
-      ...userData,
-      role: 'Customer'
+  async function register(userData) {
+    try {
+      const response = await api.post('/auth/register', userData)
+      user.value = response.data.user
+      token.value = response.data.token
+      
+      localStorage.setItem('user', JSON.stringify(user.value))
+      localStorage.setItem('authToken', token.value)
+      
+      return { success: true }
+    } catch (error) {
+      console.error('Register error:', error)
+      return { 
+        success: false, 
+        error: error.response?.data?.error || 'Registration failed' 
+      }
     }
-    localStorage.setItem('user', JSON.stringify(user.value))
-    return true
+  }
+
+  async function getProfile() {
+    try {
+      const response = await api.get('/auth/profile')
+      user.value = response.data.user
+      localStorage.setItem('user', JSON.stringify(user.value))
+    } catch (error) {
+      console.error('Get profile error:', error)
+      logout()
+    }
+  }
+
+  async function updateProfile(updates) {
+    try {
+      const response = await api.put('/auth/profile', updates)
+      user.value = response.data.user
+      localStorage.setItem('user', JSON.stringify(user.value))
+      return { success: true }
+    } catch (error) {
+      console.error('Update profile error:', error)
+      return { 
+        success: false, 
+        error: error.response?.data?.error || 'Update failed' 
+      }
+    }
   }
 
   function logout() {
     user.value = null
+    token.value = null
     localStorage.removeItem('user')
+    localStorage.removeItem('authToken')
   }
 
   function loadUser() {
     const savedUser = localStorage.getItem('user')
-    if (savedUser) {
+    const savedToken = localStorage.getItem('authToken')
+    
+    if (savedUser && savedToken) {
       user.value = JSON.parse(savedUser)
+      token.value = savedToken
     }
   }
 
@@ -48,11 +93,14 @@ export const useAuthStore = defineStore('auth', () => {
 
   return {
     user,
+    token,
     isAuthenticated,
     isAdmin,
     login,
     register,
     logout,
-    loadUser
+    loadUser,
+    getProfile,
+    updateProfile
   }
 })
