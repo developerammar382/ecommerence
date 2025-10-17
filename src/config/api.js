@@ -1,18 +1,7 @@
 import axios from 'axios';
 
 const getApiBaseUrl = () => {
-  if (import.meta.env.VITE_API_URL) {
-    return import.meta.env.VITE_API_URL;
-  }
-  
-  if (typeof window !== 'undefined') {
-    const origin = window.location.origin;
-    if (origin.includes('replit.dev')) {
-      return `${origin.replace(':5000', ':3000')}/api`;
-    }
-  }
-  
-  return 'http://localhost:3000/api';
+  return '/api';
 };
 
 const API_BASE_URL = getApiBaseUrl();
