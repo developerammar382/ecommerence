@@ -1,4 +1,4 @@
-modules = ["nodejs-20", "postgresql-16"]
+modules = ["vue-node-20", "nodejs-20", "web"]
 [agent]
 expertMode = true
 
@@ -41,6 +41,10 @@ externalPort = 3002
 [[ports]]
 localPort = 36049
 externalPort = 3001
+
+[[ports]]
+localPort = 36355
+externalPort = 5000
 
 [[ports]]
 localPort = 40169
