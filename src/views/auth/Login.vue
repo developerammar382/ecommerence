@@ -52,7 +52,7 @@
           <p class="text-xs text-gray-600">Admin: admin@example.com</p>
           <p class="text-xs text-gray-600">Manager: manager@example.com</p>
           <p class="text-xs text-gray-600">User: user@example.com</p>
-          <p class="text-xs text-gray-500 mt-1">Password: any</p>
+          <p class="text-xs text-gray-500 mt-1">Password: admin123</p>
         </div>
       </div>
     </div>
@@ -68,14 +68,15 @@ const router = useRouter()
 const authStore = useAuthStore()
 
 const email = ref('admin@example.com')
-const password = ref('password')
+const password = ref('admin123')
 
-function handleLogin() {
-  if (authStore.login(email.value, password.value)) {
+async function handleLogin() {
+  const result = await authStore.login(email.value, password.value)
+  if (result.success) {
     const redirect = router.currentRoute.value.query.redirect || '/'
     router.push(redirect)
   } else {
-    alert('Invalid credentials')
+    alert('Invalid credentials: ' + (result.error || 'Login failed'))
   }
 }
 </script>

@@ -54,7 +54,7 @@
       
       <div class="flex items-center justify-between">
         <div>
-          <span class="text-2xl font-bold text-primary-600">${{ (product.price || 0).toFixed(2) }}</span>
+          <span class="text-2xl font-bold text-primary-600">${{ parseFloat(product.price || 0).toFixed(2) }}</span>
         </div>
         <button 
           @click.stop="addToCart"
@@ -92,7 +92,7 @@ const isInWishlist = computed(() => wishlistStore.isInWishlist(props.product.id)
 
 const canTryOn = computed(() => {
   const tryOnCategories = [1, 2, 3]
-  return tryOnCategories.includes(props.product.categoryId)
+  return tryOnCategories.includes(props.product.category_id)
 })
 
 function toggleWishlist() {

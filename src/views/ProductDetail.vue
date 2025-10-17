@@ -55,20 +55,20 @@
           <div class="flex items-center gap-4 mb-4">
             <div class="flex items-center">
               <svg v-for="i in 5" :key="i" class="w-5 h-5" 
-                :class="i <= Math.round(product.rating) ? 'text-yellow-400' : 'text-gray-300'"
+                :class="i <= Math.round(parseFloat(product.rating || 0)) ? 'text-yellow-400' : 'text-gray-300'"
                 fill="currentColor" viewBox="0 0 20 20">
                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
               </svg>
-              <span class="ml-2 text-gray-600">{{ product.rating || 0 }} ({{ product.reviews || 0 }} reviews)</span>
+              <span class="ml-2 text-gray-600">{{ parseFloat(product.rating || 0).toFixed(1) }} ({{ product.reviews || 0 }} reviews)</span>
             </div>
-            <span class="badge-primary">{{ product.category }}</span>
+            <span class="badge-primary">{{ product.category_name || 'Unknown' }}</span>
           </div>
           
-          <p class="text-5xl font-bold gradient-text mb-4">${{ (product.price || 0).toFixed(2) }}</p>
+          <p class="text-5xl font-bold gradient-text mb-4">${{ parseFloat(product.price || 0).toFixed(2) }}</p>
           <p class="text-gray-700 text-lg leading-relaxed">{{ product.description }}</p>
         </div>
 
-        <div v-if="product.categoryId === 1 || product.categoryId === 2" class="space-y-4">
+        <div v-if="product.category_id === 1 || product.category_id === 2" class="space-y-4">
           <div>
             <label class="block text-sm font-semibold mb-2">Size</label>
             <div class="flex flex-wrap gap-2">
@@ -348,7 +348,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useProductStore } from '@/stores/products'
 import { useCartStore } from '@/stores/cart'
@@ -373,7 +373,7 @@ const selectedColor = ref('#000000')
 const activeTab = ref('Description')
 const showTryOnModal = ref(false)
 
-const product = computed(() => productStore.getProductById(route.params.id))
+const product = ref(null)
 const isInWishlist = computed(() => product.value && wishlistStore.isInWishlist(product.value.id))
 
 const productImages = computed(() => {
@@ -384,15 +384,29 @@ const productImages = computed(() => {
 const canTryOn = computed(() => {
   if (!product.value) return false
   const tryOnCategories = [1, 2, 3]
-  return tryOnCategories.includes(product.value.categoryId)
+  return tryOnCategories.includes(product.value.category_id)
 })
 
 const relatedProducts = computed(() => {
   if (!product.value) return []
-  return productStore.getProductsByCategory(product.value.categoryId)
+  return productStore.getProductsByCategory(product.value.category_id)
     .filter(p => p.id !== product.value.id)
     .slice(0, 4)
 })
+
+async function loadProduct() {
+  product.value = await productStore.getProductById(route.params.id)
+  if (product.value) {
+    selectedImage.value = product.value.image
+    quantity.value = 1
+  }
+}
+
+watch(() => route.params.id, (newId) => {
+  if (newId) {
+    loadProduct()
+  }
+}, { immediate: true })
 
 const tabs = ['Description', 'Reviews', 'Shipping']
 const sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
@@ -424,10 +438,6 @@ const mockReviews = [
     verified: false
   }
 ]
-
-if (product.value) {
-  selectedImage.value = product.value.image
-}
 
 function increaseQuantity() {
   if (product.value && quantity.value < product.value.stock) {

@@ -3,8 +3,8 @@ import { query } from '../config/database.js';
 
 export async function seedDatabase() {
   try {
-    const categoryCheck = await query('SELECT COUNT(*) FROM categories');
-    if (parseInt(categoryCheck.rows[0].count) > 0) {
+    const productCheck = await query('SELECT COUNT(*) FROM products');
+    if (parseInt(productCheck.rows[0].count) > 0) {
       console.log('📦 Database already seeded, skipping...');
       return;
     }
@@ -16,8 +16,10 @@ export async function seedDatabase() {
     
     await query(
       `INSERT INTO users (email, password, name, role, status) VALUES 
-       ('admin@shophub.com', $1, 'Admin User', 'admin', 'active'),
-       ('customer@example.com', $2, 'John Doe', 'customer', 'active')`,
+       ('admin@example.com', $1, 'Admin User', 'admin', 'active'),
+       ('manager@example.com', $1, 'Manager User', 'admin', 'active'),
+       ('user@example.com', $2, 'Test User', 'customer', 'active')
+       ON CONFLICT (email) DO NOTHING`,
       [adminPassword, customerPassword]
     );
 
